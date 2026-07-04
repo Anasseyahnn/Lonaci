@@ -1,0 +1,13 @@
+{
+  "name": "lonaci-scraper",
+  "version": "1.0.0",
+  "description": "Scraper for Loto Bonheur Cote d'Ivoire results",
+  "main": "fetch_results.js",
+  "type": "module",
+  "scripts": {
+    "scrape": "node fetch_results.js"
+  },
+  "dependencies": {
+    "puppeteer": "^22.10.0"
+  }
+}
