@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import sys
 
 DB_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(DB_DIR, 'lonaci.db')
@@ -85,3 +86,7 @@ def import_json_data():
 if __name__ == '__main__':
     init_db()
     import_json_data()
+
+    sys.path.append(os.path.abspath(os.path.join(DB_DIR, '..')))
+    from analysis.prospective_tracker import run_tracker
+    run_tracker()
