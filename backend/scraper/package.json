@@ -7,7 +7,5 @@
   "scripts": {
     "scrape": "node fetch_results.js"
   },
-  "dependencies": {
-    "puppeteer": "^22.10.0"
-  }
+  "dependencies": {}
 }
