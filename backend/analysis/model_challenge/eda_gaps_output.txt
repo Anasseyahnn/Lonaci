@@ -1,0 +1,63 @@
+=== PISTES SUPPLÉMENTAIRES : ÉCARTS + CORRÉLATION INTER-JEUX DIGITAL ===
+9254 tirages chargés.
+
+=== 12. ANALYSE DES ÉCARTS (GAPS) PAR NUMÉRO ===
+Sous H0, l'écart entre 2 apparitions d'un numéro suit une loi géométrique de paramètre p = 5/90 = 0.0556 (probabilité de sortie par tirage).
+
+Écart moyen théorique attendu : 18.00 tirages
+Écart moyen observé (moyenne sur les 90 numéros) : 18.04 tirages
+
+90 numéros testés (KS contre loi géométrique). Seuil corrigé : p < 0.000556
+Significatifs sans correction : 51/90 (56.7%, attendu ~5%)
+Significatifs APRÈS correction de Bonferroni : 5/90
+
+Top 10 numéros les plus suspects (plus petite p-value) :
+ number  n_appearances  mean_gap  expected_mean_gap  max_gap  ks_stat  ks_pvalue
+     88            625 14.822115               18.0       95 0.097364   0.000013
+     73            457 20.149123               18.0      129 0.106207   0.000062
+     60            506 18.283168               18.0      106 0.096267   0.000159
+      5            451 20.502222               18.0      104 0.097677   0.000345
+     84            449 20.627232               18.0      215 0.095412   0.000532
+     43            502 18.409182               18.0      105 0.086734   0.000996
+     65            490 18.815951               18.0      134 0.087721   0.001007
+     49            529 17.498106               18.0       83 0.081993   0.001551
+     63            481 19.129167               18.0      112 0.083286   0.002408
+     54            477 19.380252               18.0      112 0.082453   0.002906
+
+-> Numéro(s) dont la distribution d'écarts diffère significativement de l'aléatoire :
+ number  n_appearances  mean_gap  expected_mean_gap  max_gap  ks_stat  ks_pvalue
+     88            625 14.822115               18.0       95 0.097364   0.000013
+     73            457 20.149123               18.0      129 0.106207   0.000062
+     60            506 18.283168               18.0      106 0.096267   0.000159
+      5            451 20.502222               18.0      104 0.097677   0.000345
+     84            449 20.627232               18.0      215 0.095412   0.000532
+
+Numéros en plus grand retard actuellement (n'ont pas été tirés depuis le plus longtemps) :
+  Numéro 48 : 77 tirages sans sortir
+  Numéro 83 : 67 tirages sans sortir
+  Numéro 44 : 60 tirages sans sortir
+  Numéro 73 : 57 tirages sans sortir
+  Numéro 65 : 47 tirages sans sortir
+
+=== 13. CORRÉLATION CROISÉE ENTRE JEUX 'DIGITAL' DU MÊME JOUR ===
+Jeux testés : ['Digital Reveil 7h', 'Digital Reveil 8h', 'Digital 21h', 'Digital 22h', 'Digital 23h']
+
+            jeu_1             jeu_2  n_jours_communs  moy_communs_observee  moy_communs_attendue     chi2  p_value
+Digital Reveil 8h       Digital 22h              411              0.255474              0.277778 4.955883 0.421288
+      Digital 22h       Digital 23h              411              0.245742              0.277778 4.089671 0.536579
+      Digital 21h       Digital 22h              411              0.250608              0.277778 3.525563 0.619523
+Digital Reveil 7h       Digital 21h             1096              0.255474              0.277778 2.706766 0.745083
+Digital Reveil 7h       Digital 23h             1096              0.259124              0.277778 2.110763 0.833616
+Digital Reveil 7h       Digital 22h              411              0.301703              0.277778 1.629098 0.897708
+      Digital 21h       Digital 23h             1096              0.267336              0.277778 1.136055 0.950863
+Digital Reveil 7h Digital Reveil 8h              411              0.294404              0.277778 0.979741 0.964183
+Digital Reveil 8h       Digital 23h              411              0.265207              0.277778 0.545511 0.990362
+Digital Reveil 8h       Digital 21h              411              0.272506              0.277778 0.353824 0.996507
+
+10 paires de jeux Digital testées. Seuil corrigé : p < 0.00500
+Significatif sans correction : 0/10
+Significatif APRÈS correction : 0/10
+
+-> Aucune corrélation anormale entre les jeux Digital du même jour. Chacun semble tiré indépendamment, même s'ils partagent probablement le même moteur logiciel.
+
+=== FIN ===

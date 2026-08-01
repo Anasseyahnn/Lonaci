@@ -1,0 +1,84 @@
+=== CONTRE-AUDIT : POSITION DE TIRAGE + DÉRIVE TEMPORELLE ===
+9254 tirages, 2023-08-01 au 2026-07-31, 37 jeux.
+
+=== 9. UNIFORMITÉ PAR POSITION DE TIRAGE (toutes machines confondues) ===
+ position       chi2  p_value  num_max  freq_max  num_min  freq_min
+        1 132.647936 0.001867       44       142       84        79
+        2 110.784958 0.058796       88       131       53        79
+        3  89.311001 0.470798       28       128       71        78
+        4  97.830560 0.244855       88       132       84        82
+        5  96.819105 0.267835        7       124       68        77
+
+Significatif après Bonferroni (p < 0.0100) sur les 5 positions : 1/5
+ position       chi2  p_value  num_max  freq_max  num_min  freq_min
+        1 132.647936 0.001867       44       142       84        79
+
+=== 10. UNIFORMITÉ PAR POSITION *ET* PAR JEU (>= 100 tirages) ===
+180 tests (jeu x position). Seuil corrigé : p < 0.000278
+Significatifs sans correction : 18/180 (10.0%, attendu ~5% par hasard)
+Significatifs APRÈS correction de Bonferroni : 0/180
+
+Top 10 combinaisons jeu x position les plus significatives :
+              game  position  n_draws       chi2  p_value  num_max  freq_max
+       Digital 23h         5     1096 132.138686 0.002050       19        31
+  Fortune Thursday         1      147 129.122449 0.003522        2         9
+            Etoile         4      156 124.384615 0.007903       37         7
+Special Weekend 3h         1      312 124.153846 0.008209       25        16
+         Privilege         5      157 122.171975 0.011316       17         6
+       Digital 23h         4     1096 120.149635 0.015544       88        24
+       Digital 21h         3     1096 119.000000 0.018532       66        25
+       Digital 21h         1     1096 118.343066 0.020460       72        25
+              Wari         5      157 117.585987 0.022900       74         7
+       Digital 22h         5      411 117.394161 0.023557       14        13
+
+-> Aucune combinaison jeu x position ne survit à la correction : pas de biais positionnel caché derrière l'agrégation.
+
+=== 11. DÉRIVE TEMPORELLE DU BIAIS — TOUS JEUX CONFONDUS (fenêtres trimestrielles) ===
+periode  n_tirages       chi2  p_value  num_max  freq_max
+2023-Q3        461  93.997831 0.338128       42        36
+2023-Q4        683  82.244510 0.680621       54        50
+2024-Q1        689  79.316401 0.759123       59        54
+2024-Q2        689  84.436865 0.617086       22        49
+2024-Q3        696  99.879310 0.202168       25        59
+2024-Q4        697  94.727403 0.319127       83        56
+2025-Q1        682 117.049853 0.024779       55        55
+2025-Q2        719  90.744089 0.428657       39        55
+2025-Q3        880 106.709091 0.097226       66        69
+2025-Q4        880 129.168182 0.003494       88        74
+2026-Q1        890  86.364045 0.559396       16        66
+2026-Q2        962  84.091476 0.627285       30        72
+2026-Q3        326  80.552147 0.727083        6        28
+
+Significatif après correction (p < 0.0038) : 1/13 période(s)
+3 dernières périodes : periode  p_value
+2026-Q1 0.559396
+2026-Q2 0.627285
+2026-Q3 0.727083
+Tendance du chi² dans le temps : pente=+0.55/période, r=0.142, p=0.6432
+-> Pas de tendance temporelle significative — le niveau de biais est stable.
+
+=== 11. DÉRIVE TEMPORELLE DU BIAIS — Digital 21h (fenêtres trimestrielles) ===
+periode  n_tirages       chi2  p_value  num_max  freq_max
+2023-Q3         61  84.803279 0.606208       44         8
+2023-Q4         92  87.043478 0.538894       47        13
+2024-Q1         91  84.406593 0.617982        9        13
+2024-Q2         91  87.571429 0.522963       68        11
+2024-Q3         92 106.608696 0.098378       47        14
+2024-Q4         92 105.043478 0.117752       28        15
+2025-Q1         90  95.600000 0.297134       88        12
+2025-Q2         91  84.406593 0.617982       75        11
+2025-Q3         92  86.260870 0.562506       79        12
+2025-Q4         92 126.565217 0.005484       81        13
+2026-Q1         90 102.400000 0.156877       58        12
+2026-Q2         91  75.307692 0.849324       82        13
+2026-Q3         31  67.387097 0.957504        3         4
+
+Significatif après correction (p < 0.0038) : 0/13 période(s)
+3 dernières périodes : periode  p_value
+2026-Q1 0.156877
+2026-Q2 0.849324
+2026-Q3 0.957504
+Tendance du chi² dans le temps : pente=-0.20/période, r=-0.050, p=0.8723
+-> Pas de tendance temporelle significative — le niveau de biais est stable.
+
+=== FIN DU CONTRE-AUDIT ===

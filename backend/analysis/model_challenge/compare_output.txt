@@ -1,0 +1,87 @@
+
+### Jeu Digital Reveil 7h : 1096 tirages ###
+  freq_top5        n=1066  moyenne_correct=0.3058  amélioration_vs_hasard=+10.09%
+  freq_decay       n=1066  moyenne_correct=0.2917  amélioration_vs_hasard= +5.03%
+  markov1          n=1066  moyenne_correct=0.2871  amélioration_vs_hasard= +3.34%
+  ml_logreg        n=1066  moyenne_correct=0.2824  amélioration_vs_hasard= +1.65%
+  random_control   n=1066  moyenne_correct=0.2580  amélioration_vs_hasard= -7.13%
+
+### Jeu Digital Reveil 8h : 411 tirages ###
+  freq_top5        n= 381  moyenne_correct=0.2835  amélioration_vs_hasard= +2.05%
+  freq_decay       n= 381  moyenne_correct=0.2835  amélioration_vs_hasard= +2.05%
+  markov1          n= 381  moyenne_correct=0.3202  amélioration_vs_hasard=+15.28%
+  ml_logreg        n= 381  moyenne_correct=0.2966  amélioration_vs_hasard= +6.77%
+  random_control   n= 381  moyenne_correct=0.2546  amélioration_vs_hasard= -8.35%
+
+### Jeu Digital 21h : 1096 tirages ###
+  freq_top5        n=1066  moyenne_correct=0.3340  amélioration_vs_hasard=+20.23%
+  freq_decay       n=1066  moyenne_correct=0.3105  amélioration_vs_hasard=+11.78%
+  markov1          n=1066  moyenne_correct=0.3030  amélioration_vs_hasard= +9.08%
+  ml_logreg        n=1066  moyenne_correct=0.3068  amélioration_vs_hasard=+10.43%
+  random_control   n=1066  moyenne_correct=0.2974  amélioration_vs_hasard= +7.05%
+
+### Jeu Digital 22h : 411 tirages ###
+  freq_top5        n= 381  moyenne_correct=0.3228  amélioration_vs_hasard=+16.22%
+  freq_decay       n= 381  moyenne_correct=0.2861  amélioration_vs_hasard= +2.99%
+  markov1          n= 381  moyenne_correct=0.2992  amélioration_vs_hasard= +7.72%
+  ml_logreg        n= 381  moyenne_correct=0.2782  amélioration_vs_hasard= +0.16%
+  random_control   n= 381  moyenne_correct=0.2835  amélioration_vs_hasard= +2.05%
+
+### Jeu Digital 23h : 1096 tirages ###
+  freq_top5        n=1066  moyenne_correct=0.2899  amélioration_vs_hasard= +4.35%
+  freq_decay       n=1066  moyenne_correct=0.2852  amélioration_vs_hasard= +2.66%
+  markov1          n=1066  moyenne_correct=0.2927  amélioration_vs_hasard= +5.37%
+  ml_logreg        n=1066  moyenne_correct=0.2674  amélioration_vs_hasard= -3.75%
+  random_control   n=1066  moyenne_correct=0.2720  amélioration_vs_hasard= -2.06%
+
+==========================================================================================
+=== COMPARAISON AGRÉGÉE — TOUS JEUX DIGITAL POOLÉS (walk-forward, prédictions non vues) ===
+==========================================================================================
+
+--- freq_top5 ---
+  Prédictions évaluées : 3960
+  Moyenne bons numéros : 0.3086 (théorique aléatoire : 0.2778)
+  Amélioration vs hasard : +11.09%
+  p-value H0=hasard pur (permutation, unilatéral, 3960 tirages) : 0.0000
+
+--- freq_decay ---
+  Prédictions évaluées : 3960
+  Moyenne bons numéros : 0.2937 (théorique aléatoire : 0.2778)
+  Amélioration vs hasard : +5.73%
+  p-value H0=hasard pur (permutation, unilatéral, 3960 tirages) : 0.0242
+  Wilcoxon signé apparié vs freq_top5 (H0 = pas de différence) : p = 0.0676
+
+--- markov1 ---
+  Prédictions évaluées : 3960
+  Moyenne bons numéros : 0.2972 (théorique aléatoire : 0.2778)
+  Amélioration vs hasard : +7.00%
+  p-value H0=hasard pur (permutation, unilatéral, 3960 tirages) : 0.0068
+  Wilcoxon signé apparié vs freq_top5 (H0 = pas de différence) : p = 0.2546
+
+--- ml_logreg ---
+  Prédictions évaluées : 3960
+  Moyenne bons numéros : 0.2859 (théorique aléatoire : 0.2778)
+  Amélioration vs hasard : +2.91%
+  p-value H0=hasard pur (permutation, unilatéral, 3960 tirages) : 0.1544
+  Wilcoxon signé apparié vs freq_top5 (H0 = pas de différence) : p = 0.0254
+
+--- random_control ---
+  Prédictions évaluées : 3960
+  Moyenne bons numéros : 0.2745 (théorique aléatoire : 0.2778)
+  Amélioration vs hasard : -1.18%
+  p-value H0=hasard pur (permutation, unilatéral, 3960 tirages) : 0.6652
+  Wilcoxon signé apparié vs freq_top5 (H0 = pas de différence) : p = 0.0019
+
+Correction multi-modèles (Bonferroni, 4 modèles candidats testés contre H0 hasard) : seuil ajusté p < 0.0125
+         model  n_predictions  mean_correct  theoretical_random  improvement_pct  p_value_vs_random_H0  wilcoxon_p_vs_freq_top5  significatif_apres_correction
+     freq_top5           3960      0.308586            0.277778        11.090909                0.0000                      NaN                           True
+    freq_decay           3960      0.293687            0.277778         5.727273                0.0242                 0.067602                          False
+       markov1           3960      0.297222            0.277778         7.000000                0.0068                 0.254590                           True
+     ml_logreg           3960      0.285859            0.277778         2.909091                0.1544                 0.025396                          False
+random_control           3960      0.274495            0.277778        -1.181818                0.6652                 0.001864                          False
+
+=== CONCLUSION ===
+Modèle(s) qui battent significativement le hasard après correction :
+    model  n_predictions  mean_correct  theoretical_random  improvement_pct  p_value_vs_random_H0  wilcoxon_p_vs_freq_top5  significatif_apres_correction
+freq_top5           3960      0.308586            0.277778        11.090909                0.0000                      NaN                           True
+  markov1           3960      0.297222            0.277778         7.000000                0.0068                  0.25459                           True

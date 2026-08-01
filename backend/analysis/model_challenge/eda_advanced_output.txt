@@ -1,0 +1,69 @@
+=== ANALYSES COMPLÉMENTAIRES (au-delà de eda.py) ===
+9254 tirages chargés, 37 jeux distincts.
+
+=== 6. TEST D'UNIFORMITÉ DES NUMÉROS GAGNANTS, PAR JEU ===
+(jeux avec au moins 100 tirages seulement, pour un test statistiquement valable)
+
+              game  n_draws       chi2      p_value  biaise  num_max  freq_max  num_min  freq_min
+       Digital 21h     1096 202.547445 7.821672e-11    True       88        93        2        40
+ Digital Reveil 7h     1096 129.693431 3.184269e-03    True       88        90       64        39
+  Fortune Thursday      147 127.897959 4.362321e-03    True        2        19        8         2
+       Digital 23h     1096 118.525547 1.990738e-02    True       19        87       48        37
+Special Weekend 1h      312 114.346154 3.645372e-02    True       66        30       84         7
+          Prestige      156 104.076923 1.310962e-01   False       23        17       85         2
+              Cash      157 102.732484 1.514946e-01   False       70        18       38         3
+       Digital 22h      411 101.627737 1.699077e-01   False       14        39       22        13
+    Friday Bonanza      141  97.595745 2.500801e-01   False       65        16       11         2
+            Etoile      156  96.923077 2.654165e-01   False        3        14       52         2
+             Monni      157  96.541401 2.743583e-01   False       45        16       37         2
+             Awale      156  95.769231 2.929659e-01   False       51        19       61         2
+              Wari      157  94.936306 3.137870e-01   False       33        16        8         3
+ Digital Reveil 8h      411  94.182482 3.332677e-01   False       19        36       17        10
+            Reveil      156  93.000000 3.649545e-01   False        1        20       52         3
+     Lucky Tuesday      151  91.715232 4.007711e-01   False       75        15        9         3
+              Sika      157  91.038217 4.201456e-01   False       19        16       41         3
+       La Matinale      157  88.286624 5.014300e-01   False       43        19       34         2
+            Baraka      157  87.140127 5.359770e-01   False       41        20       39         1
+           Midweek      148  85.324324 5.906514e-01   False       44        15       28         2
+Special Weekend 3h      312  84.346154 6.197700e-01   False       22        29       87         6
+         Afterwork      151  84.324503 6.204100e-01   False        6        16       26         3
+       Benediction      156  83.307692 6.501929e-01   False       26        18       24         2
+         Privilege      157  82.554140 6.718463e-01   False       31        17       25         3
+            Akwaba      156  79.615385 7.515336e-01   False       13        18       49         2
+             Moaye      156  79.153846 7.632043e-01   False       35        15       32         3
+            Soutra      156  78.000000 7.912034e-01   False       30        15       13         1
+           Fortune      157  77.738854 7.972951e-01   False       28        15       14         3
+              Kado      157  77.280255 8.077643e-01   False       62        15       85         3
+    Premiere Heure      157  75.216561 8.511040e-01   False       83        16       54         3
+          Solution      157  74.299363 8.683062e-01   False       35        15       53         3
+           Diamant      156  74.076923 8.722831e-01   False       14        16       56         3
+          National      154  72.727273 8.947746e-01   False       61        16        2         4
+    Monday Special      141  72.319149 9.010243e-01   False        6        16       80         2
+         Emergence      157  71.089172 9.183353e-01   False       27        17       31         3
+            Espoir      156  70.846154 9.214894e-01   False        4        15       61         2
+
+5/36 jeux rejettent l'uniformité à p < 0.05 (sans correction).
+Avec correction de Bonferroni (seuil ajusté à p < 0.00139) : 1/36 jeux restent significatifs.
+-> Biais qui SURVIT à la correction sur : ['Digital 21h']. À examiner en priorité (mais toujours d'ampleur trop faible pour être exploitable en pari).
+
+=== 7. CORRÉLATION ENTRE NUMÉROS GAGNANTS ET NUMÉROS MACHINE (même tirage) ===
+Tirages avec numéros Machine renseignés : 8372/9254
+  0 numéro(s) commun(s) Gagnants/Machine : 8372 fois (100.00%) [Attendu : 6248.4 (74.63%)]
+  1 numéro(s) commun(s) Gagnants/Machine : 0 fois (0.00%) [Attendu : 1928.5 (23.04%)]
+  2 numéro(s) commun(s) Gagnants/Machine : 0 fois (0.00%) [Attendu : 188.1 (2.25%)]
+  3 numéro(s) commun(s) Gagnants/Machine : 0 fois (0.00%) [Attendu : 6.8 (0.08%)]
+  4 numéro(s) commun(s) Gagnants/Machine : 0 fois (0.00%) [Attendu : 0.1 (0.00%)]
+  5 numéro(s) commun(s) Gagnants/Machine : 0 fois (0.00%) [Attendu : 0.0 (0.00%)]
+Statistique Chi-deux (X²) : 2845.2639
+p-value : 0.000000
+-> RÉSULTAT : les numéros Machine ne sont PAS indépendants des numéros Gagnants du même tirage (p < 0.05) — à creuser, potentiellement un tirage partagé/lié plutôt que 2 tirages séparés.
+
+=== 8. TEST FORMEL D'AUTOCORRÉLATION (Ljung-Box, 10 lags) SUR LA PRÉSENCE PAR NUMÉRO ===
+Complète le test empirique #5 de eda.py avec un test statistique standard sur la série temporelle binaire 'le numéro N est-il sorti au tirage t'.
+
+Numéros testés : 90
+Significatifs à p < 0.05 (sans correction) : 2/90 (2.2%) — attendu par hasard pur : ~5%
+Significatifs après correction de Bonferroni (p < 0.00056) : 0/90
+-> RÉSULTAT : aucune autocorrélation réelle détectée. Confirme statistiquement (pas seulement empiriquement) l'indépendance temporelle des tirages.
+
+=== FIN DES ANALYSES COMPLÉMENTAIRES ===

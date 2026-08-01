@@ -1,0 +1,51 @@
+=== DÉBUT DE L'ANALYSE EXPLORATOIRE DES DONNÉES (EDA) ===
+Base de données chargée. 9254 tirages trouvés du 01/08/2023 au 31/07/2026.
+
+=== 1. TEST D'UNIFORMITÉ DES NUMÉROS GAGNANTS (1 à 90) ===
+Nombre total de tirages analysés : 9254
+Nombre total de boules tirées : 46270
+Fréquence théorique attendue par numéro : 514.11
+Numéro le plus fréquent : 88 (tiré 625 fois)
+Numéro le moins fréquent : 84 (tiré 449 fois)
+Statistique Chi-deux (X²) : 189.7662
+p-value : 0.000000
+-> RÉSULTAT : REJET de l'hypothèse d'uniformité (p < 0.05). Il y a un biais statistique significatif !
+
+=== 2. TEST D'UNIFORMITÉ DU PREMIER NUMÉRO TIRÉ (PN) ===
+Fréquence théorique attendue par numéro en 1ère position : 102.82
+PN le plus fréquent : 44 (tiré 142 fois)
+PN le moins fréquent : 84 (tiré 79 fois)
+Statistique Chi-deux (X²) : 132.6479
+p-value : 0.001867
+-> RÉSULTAT : REJET de l'hypothèse d'uniformité pour le PN (p < 0.05).
+
+=== 3. ANALYSE DE LA SOMME DES NUMÉROS GAGNANTS ===
+Somme moyenne observée : 227.54 (Attendu théorique : 227.50)
+Écart-type observé : 57.33 (Attendu théorique : 56.45)
+
+=== 4. ANALYSE DU RATIO PAIR / IMPAIR ===
+Distribution observée du nombre de numéros PAIRS par tirage :
+  0 pair(s), 5 impair(s) : 277 fois (2.99%) [Attendu : 257.3 (2.78%)]
+  1 pair(s), 4 impair(s) : 1503 fois (16.24%) [Attendu : 1411.8 (15.26%)]
+  2 pair(s), 3 impair(s) : 2940 fois (31.77%) [Attendu : 2958.0 (31.96%)]
+  3 pair(s), 2 impair(s) : 2882 fois (31.14%) [Attendu : 2958.0 (31.96%)]
+  4 pair(s), 1 impair(s) : 1406 fois (15.19%) [Attendu : 1411.8 (15.26%)]
+  5 pair(s), 0 impair(s) : 246 fois (2.66%) [Attendu : 257.3 (2.78%)]
+Statistique Chi-deux (X²) : 9.9887
+p-value : 0.075557
+-> RÉSULTAT : Ratio Pair/Impair conforme à la distribution théorique (p >= 0.05).
+
+=== 5. ANALYSE DES RÉPÉTITIONS CONSÉCUTIVES (DÉPENDANCE TEMPORELLE) ===
+Distribution observée du nombre de numéros répétés d'un tirage à l'autre :
+  0 numéro(s) commun(s) : 6883 fois (74.39%) [Attendu : 6906.0 (74.63%)]
+  1 numéro(s) commun(s) : 2147 fois (23.20%) [Attendu : 2131.5 (23.04%)]
+  2 numéro(s) commun(s) : 217 fois (2.35%) [Attendu : 207.9 (2.25%)]
+  3 numéro(s) commun(s) : 6 fois (0.06%) [Attendu : 7.5 (0.08%)]
+  4 numéro(s) commun(s) : 0 fois (0.00%) [Attendu : 0.1 (0.00%)]
+  5 numéro(s) commun(s) : 0 fois (0.00%) [Attendu : 0.0 (0.00%)]
+Statistique Chi-deux (X²) : 0.9791
+p-value : 0.964237
+-> RÉSULTAT : Indépendance temporelle confirmée. Le taux de répétition est normal (p >= 0.05).
+
+=== FIN DE L'ANALYSE EXPLORATOIRE ===
+Toutes les figures ont été sauvegardées dans : F:\Startup\Lonaci\backend\analysis\plots
