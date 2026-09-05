@@ -22,6 +22,7 @@ import sqlite3
 import os
 import sys
 import json
+import zlib
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -251,7 +252,11 @@ def run_challenge(conn, games, group_name):
         preds_decay = run_freq_decay(draws_matrix, presence)
         preds_markov = run_markov1(draws_matrix, presence)
         preds_ml = run_ml_logreg(draws_matrix, presence, dates)
-        preds_rand = run_random_control(draws_matrix, presence, seed_offset=hash(game) % 1000)
+        # zlib.crc32 plutôt que hash() intégré : hash() sur une str est salé
+        # aléatoirement par processus (PYTHONHASHSEED), donc random_control
+        # changeait à chaque exécution même à données identiques — cassait la
+        # reproductibilité de la référence "hasard pur" censée être stable.
+        preds_rand = run_random_control(draws_matrix, presence, seed_offset=zlib.crc32(game.encode()) % 1000)
 
         for name, preds in [('freq_top5', preds_freq), ('freq_decay', preds_decay),
                              ('markov1', preds_markov), ('ml_logreg', preds_ml),
