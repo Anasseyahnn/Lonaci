@@ -200,15 +200,20 @@ def analyze_even_odd(df):
 
 def analyze_temporal_repeats(df):
     print("\n=== 5. ANALYSE DES RÉPÉTITIONS CONSÉCUTIVES (DÉPENDANCE TEMPORELLE) ===")
-    
+
+    # CORRIGÉ (2026-09-05) : comparer draw[i] à draw[i-1] sur le dataframe
+    # trié par date TOUS JEUX CONFONDUS revenait à comparer deux tirages de
+    # jeux différents la plupart du temps (36 jeux interleaved). Le "tirage
+    # précédent" pertinent est le précédent tirage DU MÊME JEU — on calcule
+    # donc les écarts par groupe `game`, puis on pool les résultats (valide,
+    # chaque comparaison individuelle est maintenant correcte).
     winning_cols = ['winning_1', 'winning_2', 'winning_3', 'winning_4', 'winning_5']
-    draws_sets = [set(row) for row in df[winning_cols].values]
-    
     repeats = []
-    for i in range(1, len(draws_sets)):
-        common = len(draws_sets[i].intersection(draws_sets[i-1]))
-        repeats.append(common)
-        
+    for _, group in df.sort_values(['game', 'date']).groupby('game'):
+        draws_sets = [set(row) for row in group[winning_cols].values]
+        for i in range(1, len(draws_sets)):
+            repeats.append(len(draws_sets[i].intersection(draws_sets[i - 1])))
+
     repeats_series = pd.Series(repeats)
     observed_counts = repeats_series.value_counts().reindex(range(6), fill_value=0)
     

@@ -132,54 +132,62 @@ def winning_vs_machine_correlation(df):
     print(f"p-value : {p_val:.6f}")
     if p_val < 0.05:
         print("-> RÉSULTAT : les numéros Machine ne sont PAS indépendants des numéros "
-              "Gagnants du même tirage (p < 0.05) — à creuser, potentiellement un tirage "
-              "partagé/lié plutôt que 2 tirages séparés.")
+              "Gagnants du même tirage (p < 0.05). Note (2026-09-05) : ce n'est pas un mystère "
+              "à creuser — 0 numéro commun sur 100% des tirages est la signature d'une "
+              "contrainte structurelle (probable tirage unique de 10 boules distinctes sans "
+              "remise, scindé en deux groupes de 5 étiquetés 'gagnants'/'machine'), pas une "
+              "anomalie exploitable. Ne pas interpréter comme un biais de jeu.")
     else:
         print("-> RÉSULTAT : indépendance confirmée. Les numéros Machine ne donnent "
               "aucune information exploitable sur les numéros Gagnants du même tirage.")
 
 
-def formal_autocorrelation_test(df, lags=10):
+def formal_autocorrelation_test(df, lags=10, min_draws=100):
     print(f"\n=== 8. TEST FORMEL D'AUTOCORRÉLATION (Ljung-Box, {lags} lags) SUR LA PRÉSENCE PAR NUMÉRO ===")
     print("Complète le test empirique #5 de eda.py avec un test statistique standard "
           "sur la série temporelle binaire 'le numéro N est-il sorti au tirage t'.\n")
+    print("CORRIGÉ (2026-09-05) : testé PAR JEU, pas sur la série tous jeux confondus — "
+          "une série interleavée de 36 jeux différents n'a pas de lag(t-1) qui veuille dire "
+          "quelque chose (le tirage précédent est presque toujours un autre jeu).\n")
 
     winning_cols = ['winning_1', 'winning_2', 'winning_3', 'winning_4', 'winning_5']
-    draws_matrix = df[winning_cols].values
-    n = len(df)
 
-    presence = np.zeros((n, 91), dtype=int)
-    for t in range(n):
-        presence[t, draws_matrix[t]] = 1
-
-    p_values = []
-    for num in range(1, 91):
-        series = presence[:, num]
-        try:
-            lb = acorr_ljungbox(series, lags=[lags], return_df=True)
-            p_values.append(lb['lb_pvalue'].iloc[0])
-        except Exception:
+    results = []
+    for game, group in df.sort_values(['game', 'date']).groupby('game'):
+        if len(group) < min_draws:
             continue
+        draws_matrix = group[winning_cols].values
+        n = len(group)
+        presence = np.zeros((n, 91), dtype=int)
+        for t in range(n):
+            presence[t, draws_matrix[t]] = 1
 
-    p_values = np.array(p_values)
-    n_tested = len(p_values)
-    n_significant = (p_values < 0.05).sum()
+        for num in range(1, 91):
+            series = presence[:, num]
+            try:
+                lb = acorr_ljungbox(series, lags=[lags], return_df=True)
+                results.append({'game': game, 'number': num, 'p_value': lb['lb_pvalue'].iloc[0]})
+            except Exception:
+                continue
+
+    res_df = pd.DataFrame(results)
+    n_tested = len(res_df)
+    n_significant = (res_df['p_value'] < 0.05).sum()
     alpha_corrected = 0.05 / n_tested if n_tested else 0.05
-    n_significant_corrected = (p_values < alpha_corrected).sum()
+    sig_df = res_df[res_df['p_value'] < alpha_corrected]
 
-    print(f"Numéros testés : {n_tested}")
+    print(f"Tests (jeu x numéro) : {n_tested}")
     print(f"Significatifs à p < 0.05 (sans correction) : {n_significant}/{n_tested} "
           f"({n_significant/n_tested*100:.1f}%) — attendu par hasard pur : ~5%")
-    print(f"Significatifs après correction de Bonferroni (p < {alpha_corrected:.5f}) : "
-          f"{n_significant_corrected}/{n_tested}")
+    print(f"Significatifs après correction de Bonferroni (p < {alpha_corrected:.6f}) : {len(sig_df)}/{n_tested}")
 
-    if n_significant_corrected == 0:
-        print("-> RÉSULTAT : aucune autocorrélation réelle détectée. Confirme statistiquement "
-              "(pas seulement empiriquement) l'indépendance temporelle des tirages.")
+    if len(sig_df) == 0:
+        print("-> RÉSULTAT : aucune autocorrélation réelle détectée, même testé correctement par "
+              "jeu. Confirme statistiquement l'indépendance temporelle des tirages.")
     else:
-        print(f"-> RÉSULTAT : {n_significant_corrected} numéro(s) montrent une autocorrélation "
-              "qui survit à la correction — anomalie à examiner (mais rare et probablement "
-              "un faux positif résiduel sur 90 tests).")
+        print("-> RÉSULTAT : combinaison(s) jeu x numéro montrant une autocorrélation qui survit "
+              "à la correction — anomalie à examiner :")
+        print(sig_df.sort_values('p_value').to_string(index=False))
 
 
 def main():
