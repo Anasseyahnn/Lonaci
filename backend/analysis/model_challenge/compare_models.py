@@ -20,6 +20,7 @@ prospective_tracker.py, pour rester cohérent avec le juge final prospectif).
 """
 import sqlite3
 import os
+import sys
 import json
 import warnings
 warnings.filterwarnings('ignore')
@@ -33,8 +34,10 @@ ANALYSIS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.abspath(os.path.join(ANALYSIS_DIR, '..', 'database', 'lonaci.db'))
 OUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DIGITAL_GAMES = ['Digital Reveil 7h', 'Digital Reveil 8h', 'Digital 21h', 'Digital 22h', 'Digital 23h']
-CONTROL_GAMES = ['Special Weekend 1h', 'Special Weekend 3h', 'Wari', 'Soutra', 'National']
+if ANALYSIS_DIR not in sys.path:
+    sys.path.insert(0, ANALYSIS_DIR)
+from game_config import DIGITAL_GAMES, CONTROL_GAMES
+
 WINNING_COLS = ['winning_1', 'winning_2', 'winning_3', 'winning_4', 'winning_5']
 
 MIN_HISTORY = 30

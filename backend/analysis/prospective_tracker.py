@@ -46,6 +46,7 @@ Boucle à chaque exécution (déclenchée après l'import des nouveaux tirages) 
 import sqlite3
 import json
 import os
+import sys
 from datetime import datetime, timezone
 
 import numpy as np
@@ -56,14 +57,15 @@ from scipy import stats
 ANALYSIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.abspath(os.path.join(ANALYSIS_DIR, '..', 'database', 'lonaci.db'))
 
+if ANALYSIS_DIR not in sys.path:
+    sys.path.insert(0, ANALYSIS_DIR)
+from game_config import DIGITAL_GAMES, CONTROL_GAMES
+
 MODEL_VERSION = "freq_top5_v1"
 MARKOV_MODEL_VERSION = "markov1_v1"
 DIGITAL_MODEL_VERSIONS = [MODEL_VERSION, MARKOV_MODEL_VERSION]
 TOP_K = 5
 MIN_HISTORY = 30  # pas de prédiction tant qu'il y a moins de tirages que ça pour ce jeu
-
-DIGITAL_GAMES = ['Digital Reveil 7h', 'Digital Reveil 8h', 'Digital 21h', 'Digital 22h', 'Digital 23h']
-CONTROL_GAMES = ['Special Weekend 1h', 'Special Weekend 3h', 'Wari', 'Soutra', 'National']
 
 WINNING_COLS = ['winning_1', 'winning_2', 'winning_3', 'winning_4', 'winning_5']
 

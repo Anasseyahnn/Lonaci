@@ -20,11 +20,14 @@ import numpy as np
 import scipy.stats as stats
 from itertools import combinations
 import os
+import sys
 
 ANALYSIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.abspath(os.path.join(ANALYSIS_DIR, '..', 'database', 'lonaci.db'))
 
-DIGITAL_GAMES = ['Digital Reveil 7h', 'Digital Reveil 8h', 'Digital 21h', 'Digital 22h', 'Digital 23h']
+if ANALYSIS_DIR not in sys.path:
+    sys.path.insert(0, ANALYSIS_DIR)
+from game_config import DIGITAL_GAMES  # inclut désormais Afterwork, cf. game_config.py
 
 
 def load_data():
