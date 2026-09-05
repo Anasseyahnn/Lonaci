@@ -45,7 +45,7 @@ def load_draws(cols):
     query = f"""
         SELECT date, game, {', '.join(cols)}
         FROM draws
-        WHERE {cols[0]} IS NOT NULL
+        WHERE {cols[0]} IS NOT NULL AND is_valid = 1
         ORDER BY date ASC, id ASC
     """
     df = pd.read_sql_query(query, conn)

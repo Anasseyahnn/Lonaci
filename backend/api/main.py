@@ -119,10 +119,11 @@ def get_history(limit: int = 50, game: str | None = None):
         SELECT date, game,
                winning_1, winning_2, winning_3, winning_4, winning_5
         FROM draws
+        WHERE is_valid = 1
     """
     params = []
     if game is not None:
-        query += " WHERE game = ?"
+        query += " AND game = ?"
         params.append(game)
     query += " ORDER BY date DESC, id DESC LIMIT ?"
     params.append(limit)

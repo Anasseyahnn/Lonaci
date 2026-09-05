@@ -185,7 +185,7 @@ def resolve_pending_predictions(conn):
     for pred_id, game, cutoff, predicted_json in pending:
         row = cur.execute(
             f"""SELECT date, {', '.join(WINNING_COLS)} FROM draws
-                WHERE game = ? AND date > ?
+                WHERE game = ? AND date > ? AND is_valid = 1
                 ORDER BY date ASC, id ASC LIMIT 1""",
             (game, cutoff)
         ).fetchone()
@@ -237,7 +237,7 @@ def generate_new_predictions(conn, games, group_label, model_versions):
 
             if df is None:
                 df = pd.read_sql_query(
-                    f"SELECT date, {', '.join(WINNING_COLS)} FROM draws WHERE game = ? ORDER BY date ASC, id ASC",
+                    f"SELECT date, {', '.join(WINNING_COLS)} FROM draws WHERE game = ? AND is_valid = 1 ORDER BY date ASC, id ASC",
                     conn, params=(game,)
                 )
                 if len(df) < MIN_HISTORY:
@@ -398,14 +398,14 @@ def suspect_number_report(conn, number):
         f"""SELECT
                 SUM(CASE WHEN {hit_clause} THEN 1 ELSE 0 END),
                 COUNT(*)
-            FROM draws WHERE game IN ({games_sql}) AND date <= ?""",
+            FROM draws WHERE game IN ({games_sql}) AND date <= ? AND is_valid = 1""",
         (*([number] * len(WINNING_COLS)), *DIGITAL_GAMES, tracking_start)
     ).fetchone()
     prosp_hits, prosp_total = conn.execute(
         f"""SELECT
                 SUM(CASE WHEN {hit_clause} THEN 1 ELSE 0 END),
                 COUNT(*)
-            FROM draws WHERE game IN ({games_sql}) AND date > ?""",
+            FROM draws WHERE game IN ({games_sql}) AND date > ? AND is_valid = 1""",
         (*([number] * len(WINNING_COLS)), *DIGITAL_GAMES, tracking_start)
     ).fetchone()
 

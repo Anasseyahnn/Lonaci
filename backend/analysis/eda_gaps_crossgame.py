@@ -34,7 +34,7 @@ def load_data():
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("""
         SELECT date, game, winning_1, winning_2, winning_3, winning_4, winning_5
-        FROM draws ORDER BY date ASC, id ASC
+        FROM draws WHERE is_valid = 1 ORDER BY date ASC, id ASC
     """, conn)
     conn.close()
     df['date'] = pd.to_datetime(df['date'])

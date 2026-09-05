@@ -50,7 +50,7 @@ RNG_SEED = 42
 
 def load_game(conn, game):
     df = pd.read_sql_query(
-        f"SELECT date, {', '.join(WINNING_COLS)} FROM draws WHERE game = ? ORDER BY date ASC, id ASC",
+        f"SELECT date, {', '.join(WINNING_COLS)} FROM draws WHERE game = ? AND is_valid = 1 ORDER BY date ASC, id ASC",
         conn, params=(game,)
     )
     df['date'] = pd.to_datetime(df['date'])

@@ -23,9 +23,10 @@ MODEL_PATH = os.path.join(ANALYSIS_DIR, 'best_model.pkl')
 def load_draws():
     conn = sqlite3.connect(DB_PATH)
     query = """
-        SELECT date, game, 
+        SELECT date, game,
                winning_1, winning_2, winning_3, winning_4, winning_5
         FROM draws
+        WHERE is_valid = 1
         ORDER BY date ASC, id ASC
     """
     df = pd.read_sql_query(query, conn)
@@ -168,7 +169,7 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     # Get only train set date boundary
     train_max_date = df.loc[train_draw_indices[-1], 'date']
-    query = f"SELECT winning_1, winning_2, winning_3, winning_4, winning_5 FROM draws WHERE date <= '{train_max_date}'"
+    query = f"SELECT winning_1, winning_2, winning_3, winning_4, winning_5 FROM draws WHERE date <= '{train_max_date}' AND is_valid = 1"
     train_draws = pd.read_sql_query(query, conn).values.flatten()
     conn.close()
     

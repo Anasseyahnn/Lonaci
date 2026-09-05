@@ -41,7 +41,7 @@ def get_global_frequencies():
     biais éventuel n'aurait ni la même cause ni la même validité.
     """
     conn = get_db_connection()
-    query = "SELECT winning_1, winning_2, winning_3, winning_4, winning_5 FROM draws"
+    query = "SELECT winning_1, winning_2, winning_3, winning_4, winning_5 FROM draws WHERE is_valid = 1"
     df = pd.read_sql_query(query, conn)
     conn.close()
 
@@ -59,7 +59,7 @@ def get_game_frequencies(game):
     conn = get_db_connection()
     query = (
         "SELECT winning_1, winning_2, winning_3, winning_4, winning_5 "
-        "FROM draws WHERE game = ? ORDER BY date ASC, id ASC"
+        "FROM draws WHERE game = ? AND is_valid = 1 ORDER BY date ASC, id ASC"
     )
     df = pd.read_sql_query(query, conn, params=(game,))
     conn.close()
@@ -119,7 +119,7 @@ def get_game_statistics():
     tirages par jeu, dates) — usage purement descriptif, pas de prédiction.
     """
     conn = get_db_connection()
-    df = pd.read_sql_query("SELECT date, game FROM draws", conn)
+    df = pd.read_sql_query("SELECT date, game FROM draws WHERE is_valid = 1", conn)
     conn.close()
 
     total_draws = len(df)

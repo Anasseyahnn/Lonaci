@@ -21,6 +21,7 @@ def load_data():
                winning_1, winning_2, winning_3, winning_4, winning_5,
                machine_1, machine_2, machine_3, machine_4, machine_5
         FROM draws
+        WHERE is_valid = 1
         ORDER BY date ASC, id ASC
     """
     df = pd.read_sql_query(query, conn)
