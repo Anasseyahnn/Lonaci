@@ -51,6 +51,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 from scipy.stats import binom
+from scipy import stats
 
 ANALYSIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.abspath(os.path.join(ANALYSIS_DIR, '..', 'database', 'lonaci.db'))
@@ -279,7 +280,10 @@ def permutation_pvalue(predicted_lists, observed_correct, n_perm=5000, seed=42):
     return (null_sums >= observed_correct).mean()
 
 
-def scoreboard(conn, group_label, label, model_version=None):
+def compute_scoreboard(conn, group_label, model_version=None):
+    """Calcule le scoreboard prospectif — séparé de l'affichage pour que
+    l'API (backend/api/main.py) puisse servir les mêmes chiffres exacts au
+    lieu de valeurs figées recopiées à la main depuis une exécution passée."""
     query = ("SELECT game, predicted_numbers, actual_numbers, n_correct FROM predictions "
              "WHERE group_label = ? AND n_correct IS NOT NULL")
     params = [group_label]
@@ -288,34 +292,81 @@ def scoreboard(conn, group_label, label, model_version=None):
         params.append(model_version)
     df = pd.read_sql_query(query, conn, params=params)
 
+    result = {'group_label': group_label, 'model_version': model_version, 'n': len(df)}
+    if len(df) == 0:
+        result['status'] = 'no_data'
+        return result
+
+    n = len(df)
+    random_expectation = 5 * 5 / 90.0
+    observed_mean = df['n_correct'].mean()
+    result.update({
+        'status': 'ok',
+        'observed_mean_correct': float(observed_mean),
+        'random_expectation': random_expectation,
+        'improvement_pct': float((observed_mean - random_expectation) / random_expectation * 100),
+        'distribution': {k: int((df['n_correct'] == k).sum()) for k in range(6)},
+    })
+
+    if n < 10:
+        result['status'] = 'insufficient_n'
+        return result
+
+    predicted_lists = [json.loads(x) for x in df['predicted_numbers']]
+    observed_correct = int(df['n_correct'].sum())
+    result['permutation_p_value'] = float(permutation_pvalue(predicted_lists, observed_correct))
+
+    # La moyenne de bons numéros peut s'améliorer uniquement parce que les
+    # tirages à 0 bon numéro deviennent des tirages à 1 bon numéro — ce qui ne
+    # rapporte rien dans le jeu réel (le pari payant le plus bas, 2N, exige au
+    # moins 2 bons numéros). On rapporte donc aussi le taux réel par palier de
+    # gain, avec un test binomial dédié à chaque seuil.
+    thresholds = {}
+    for seuil in (2, 3, 4, 5):
+        count_seuil = int((df['n_correct'] >= seuil).sum())
+        p_theorique = float(stats.hypergeom.sf(seuil - 1, 90, 5, 5))
+        p_binom = float(stats.binomtest(count_seuil, n, p_theorique, alternative='greater').pvalue)
+        thresholds[seuil] = {
+            'count': count_seuil, 'rate': count_seuil / n,
+            'theoretical_rate': p_theorique, 'p_value_vs_random': p_binom,
+        }
+    result['payout_thresholds'] = thresholds
+    return result
+
+
+def scoreboard(conn, group_label, label, model_version=None):
+    r = compute_scoreboard(conn, group_label, model_version)
     model_suffix = f", modèle {model_version}" if model_version else ""
     print(f"\n=== SCOREBOARD PROSPECTIF — {label} ({group_label}{model_suffix}) ===")
-    if len(df) == 0:
+
+    if r['status'] == 'no_data':
         print("Aucune prédiction résolue pour l'instant.")
         return
 
-    n = len(df)
-    observed_mean = df['n_correct'].mean()
-    random_expectation = 5 * 5 / 90.0
-    improvement = (observed_mean - random_expectation) / random_expectation * 100
-
+    n = r['n']
     print(f"Prédictions résolues : {n}")
-    print(f"Moyenne de bons numéros : {observed_mean:.4f} (aléatoire théorique : {random_expectation:.4f})")
-    print(f"Amélioration vs aléatoire : {improvement:+.2f}%")
+    print(f"Moyenne de bons numéros : {r['observed_mean_correct']:.4f} (aléatoire théorique : {r['random_expectation']:.4f})")
+    print(f"Amélioration vs aléatoire : {r['improvement_pct']:+.2f}%")
 
-    if n < 10:
+    if r['status'] == 'insufficient_n':
         print(f"-> Encore trop peu de points ({n}) pour un test statistique fiable. "
               f"Continuer la collecte avant d'interpréter.")
         return
 
-    predicted_lists = [json.loads(x) for x in df['predicted_numbers']]
-    observed_correct = int(df['n_correct'].sum())
-    p_val = permutation_pvalue(predicted_lists, observed_correct)
-    print(f"Test de permutation (H0 = tirages purement aléatoires, {n} tirages résolus) : p-value = {p_val:.4f}")
-    if p_val < 0.05:
+    print(f"Test de permutation (H0 = tirages purement aléatoires, {n} tirages résolus) : p-value = {r['permutation_p_value']:.4f}")
+    if r['permutation_p_value'] < 0.05:
         print("-> Significatif à ce stade. Continuer à accumuler pour confirmer la stabilité dans le temps.")
     else:
         print("-> Pas (encore) significatif. Pas de conclusion à tirer prématurément.")
+
+    print("Répartition par nombre de bons numéros (0 à 5) :")
+    for k, count_k in r['distribution'].items():
+        print(f"  k={k} : {count_k:3d} ({count_k / n * 100:5.1f}%)")
+
+    print("Taux de tirages atteignant le seuil de gain réel (paris 2N/3N/4N/5N) :")
+    for seuil, t in r['payout_thresholds'].items():
+        print(f"  P(k>={seuil}) observé = {t['count']}/{n} ({t['rate'] * 100:.2f}%) | "
+              f"théorique hasard = {t['theoretical_rate'] * 100:.4f}% | p-value binomiale = {t['p_value_vs_random']:.4f}")
 
 
 def suspect_number_report(conn, number):

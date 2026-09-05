@@ -32,6 +32,12 @@ def load_data():
     return df
 
 def analyze_uniformity_all_numbers(df):
+    # NOTE (2026-09-05) : ce test pool tous les jeux (Digital + physiques).
+    # C'est le test fondateur du projet et il a longtemps justifié, à tort,
+    # le "biais mécanique global" servi par predictor.py/l'API — corrigé
+    # depuis (cf. game_config.py, [[project-lonaci-model-challenge]]). Un
+    # rejet d'uniformité ici ne dit pas QUEL jeu ni QUEL mécanisme est en
+    # cause ; se référer à prospective_tracker.py pour une lecture par jeu.
     print("\n=== 1. TEST D'UNIFORMITÉ DES NUMÉROS GAGNANTS (1 à 90) ===")
     
     # Flatten all winning numbers (5 per draw)

@@ -1,3 +1,10 @@
+# SUPERSEDÉ (2026-09-05) : ce script pool tous les jeux (Digital + physiques)
+# dans un même entraînement/évaluation, sans distinguer les mécanismes de
+# tirage — cf. game_config.py et [[project-lonaci-model-challenge]]. Les
+# modèles retenus en prod (freq_top5_v1, markov1_v1) viennent de
+# model_challenge/compare_models.py, qui fait un walk-forward strict PAR JEU.
+# Ne pas réutiliser ce script pour une décision de modèle sans le corriger
+# d'abord (filtrer par jeu comme prospective_tracker.py).
 import sqlite3
 import pandas as pd
 import numpy as np

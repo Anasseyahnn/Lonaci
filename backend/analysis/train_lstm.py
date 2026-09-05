@@ -6,6 +6,14 @@ prédire le vecteur du tirage suivant à partir d'une fenêtre glissante des N
 tirages précédents. Évalué exactement comme train.py (top-5 prédits vs
 numéros réellement gagnants, comparé à l'espérance aléatoire théorique de
 0.278) pour une comparaison honnête et directe avec les modèles classiques.
+
+SUPERSEDÉ (2026-09-05) : le plus grave des scripts pré-refonte — il ne
+sélectionne même pas la colonne `game`, donc traite TOUS les jeux (Digital
+21h, National, Wari, Reveil, ...) comme UNE SEULE séquence temporelle
+entrelacée. Le réseau apprend des dépendances tirage(t-1)->tirage(t) entre
+des jeux différents tirés à des heures et par des mécanismes différents —
+des dépendances qui n'existent pas dans la réalité. Ne pas réutiliser sans
+reconstruire la séquence par jeu (cf. game_config.py).
 """
 import sqlite3
 import numpy as np
