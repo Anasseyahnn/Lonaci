@@ -229,15 +229,17 @@ def permutation_pvalue(n_trials, observed_correct, n_perm=5000, seed=42):
     return (null_sums >= observed_correct).mean()
 
 
-def main():
-    conn = sqlite3.connect(DB_PATH)
+def run_challenge(conn, games, group_name):
+    """Walk-forward strict sur `games`, pooled. Retourne (res_df par jeu,
+    summary_df pooled) — factorisé pour être appelé une fois par groupe
+    (digital / control) avec le même code, cf. game_config.py."""
     all_results = []
     per_model_correct = {m: [] for m in ['freq_top5', 'freq_decay', 'markov1', 'ml_logreg', 'random_control']}
 
-    for game in DIGITAL_GAMES:
+    for game in games:
         df = load_game(conn, game)
         n = len(df)
-        print(f"\n### Jeu {game} : {n} tirages ###")
+        print(f"\n### [{group_name}] Jeu {game} : {n} tirages ###")
         if n < MIN_HISTORY + 10:
             print("  -> Pas assez de tirages pour un walk-forward significatif, jeu ignoré.")
             continue
@@ -259,29 +261,38 @@ def main():
             mean_c = correct.mean()
             improvement = (mean_c - 5 * 5 / 90) / (5 * 5 / 90) * 100
             print(f"  {name:16s} n={len(correct):4d}  moyenne_correct={mean_c:.4f}  amélioration_vs_hasard={improvement:+6.2f}%")
-            all_results.append({'game': game, 'model': name, 'n': len(correct), 'mean_correct': mean_c,
+            all_results.append({'group': group_name, 'game': game, 'model': name, 'n': len(correct), 'mean_correct': mean_c,
                                  'improvement_pct': improvement, 'sum_correct': int(correct.sum())})
 
-    conn.close()
-
     res_df = pd.DataFrame(all_results)
-    res_df.to_csv(os.path.join(OUT_DIR, 'model_comparison_per_game.csv'), index=False)
 
     print("\n" + "=" * 90)
-    print("=== COMPARAISON AGRÉGÉE — TOUS JEUX DIGITAL POOLÉS (walk-forward, prédictions non vues) ===")
+    print(f"=== COMPARAISON AGRÉGÉE — GROUPE '{group_name}' ({len(games)} jeux poolés, walk-forward) ===")
     print("=" * 90)
 
     theoretical = 5 * 5 / 90.0
     summary = []
-    baseline_pooled = np.concatenate(per_model_correct['freq_top5'])
+    baseline_pooled = np.concatenate(per_model_correct['freq_top5']) if per_model_correct['freq_top5'] else np.array([])
 
     for name, arrs in per_model_correct.items():
+        if not arrs:
+            continue
         pooled = np.concatenate(arrs)
         n_trials = len(pooled)
         observed_sum = int(pooled.sum())
         mean_c = pooled.mean()
         improvement = (mean_c - theoretical) / theoretical * 100
         p_val_random = permutation_pvalue(n_trials, observed_sum)
+
+        # Seuil de gain réel (2N/3N/4N/5N) — la moyenne peut s'améliorer par
+        # un simple glissement 0->1 bon numéro, ce qui ne rapporte rien dans
+        # le jeu réel. Cf. prospective_tracker.compute_scoreboard.
+        thresholds = {}
+        for seuil in (2, 3, 4, 5):
+            count_seuil = int((pooled >= seuil).sum())
+            p_theo = stats.hypergeom.sf(seuil - 1, 90, 5, 5)
+            p_binom = stats.binomtest(count_seuil, n_trials, p_theo, alternative='greater').pvalue
+            thresholds[seuil] = (count_seuil, p_theo, p_binom)
 
         if name != 'freq_top5' and len(pooled) == len(baseline_pooled):
             try:
@@ -292,38 +303,66 @@ def main():
             w_stat, w_p = np.nan, np.nan
 
         summary.append({
-            'model': name, 'n_predictions': n_trials, 'mean_correct': mean_c,
+            'group': group_name, 'model': name, 'n_predictions': n_trials, 'mean_correct': mean_c,
             'theoretical_random': theoretical, 'improvement_pct': improvement,
             'p_value_vs_random_H0': p_val_random,
+            'rate_k_ge_2': thresholds[2][0] / n_trials, 'p_value_k_ge_2': thresholds[2][2],
             'wilcoxon_p_vs_freq_top5': w_p,
         })
-        print(f"\n--- {name} ---")
+        print(f"\n--- [{group_name}] {name} ---")
         print(f"  Prédictions évaluées : {n_trials}")
         print(f"  Moyenne bons numéros : {mean_c:.4f} (théorique aléatoire : {theoretical:.4f})")
-        print(f"  Amélioration vs hasard : {improvement:+.2f}%")
-        print(f"  p-value H0=hasard pur (permutation, unilatéral, {n_trials} tirages) : {p_val_random:.4f}")
+        print(f"  Amélioration vs hasard (moyenne) : {improvement:+.2f}%")
+        print(f"  p-value H0=hasard pur sur la MOYENNE (permutation, {n_trials} tirages) : {p_val_random:.4f}")
+        for seuil, (count_seuil, p_theo, p_binom) in thresholds.items():
+            print(f"  P(k>={seuil}) = {count_seuil}/{n_trials} ({count_seuil / n_trials * 100:.2f}%) | "
+                  f"théorique {p_theo * 100:.4f}% | p-value binomiale = {p_binom:.4f}")
         if name != 'freq_top5':
             print(f"  Wilcoxon signé apparié vs freq_top5 (H0 = pas de différence) : p = {w_p:.4f}" if not np.isnan(w_p) else "  Wilcoxon: n/a")
 
     summary_df = pd.DataFrame(summary)
-    n_models_tested = len(summary_df) - 1  # -1 car random_control n'est pas un "candidat" à comparer à la correction
+    return res_df, summary_df
+
+
+def main():
+    conn = sqlite3.connect(DB_PATH)
+
+    res_digital, summary_digital = run_challenge(conn, DIGITAL_GAMES, 'digital')
+    res_control, summary_control = run_challenge(conn, CONTROL_GAMES, 'control')
+
+    conn.close()
+
+    res_df = pd.concat([res_digital, res_control], ignore_index=True)
+    res_df.to_csv(os.path.join(OUT_DIR, 'model_comparison_per_game.csv'), index=False)
+
+    summary_df = pd.concat([summary_digital, summary_control], ignore_index=True)
+    n_models_tested = len(summary_digital) - 1  # -1 car random_control n'est pas un "candidat" à comparer à la correction
     alpha_corrected = 0.05 / max(n_models_tested, 1)
-    print(f"\nCorrection multi-modèles (Bonferroni, {n_models_tested} modèles candidats testés contre H0 hasard) : "
-          f"seuil ajusté p < {alpha_corrected:.4f}")
-    summary_df['significatif_apres_correction'] = summary_df['p_value_vs_random_H0'] < alpha_corrected
+    summary_df['significatif_apres_correction_moyenne'] = summary_df['p_value_vs_random_H0'] < alpha_corrected
+    summary_df['significatif_apres_correction_k_ge_2'] = summary_df['p_value_k_ge_2'] < alpha_corrected
+
+    print("\n" + "=" * 90)
+    print("=== TABLEAU FINAL — DIGITAL (signal) vs CONTROL (témoin, 30 jeux) ===")
+    print("=" * 90)
+    print(f"Correction multi-modèles (Bonferroni, {n_models_tested} modèles candidats testés contre H0 hasard, "
+          f"appliquée séparément à chaque groupe) : seuil ajusté p < {alpha_corrected:.4f}")
     print(summary_df.to_string(index=False))
     summary_df.to_csv(os.path.join(OUT_DIR, 'model_comparison_summary.csv'), index=False)
 
     print("\n=== CONCLUSION ===")
-    winners = summary_df[(summary_df['model'] != 'random_control') & (summary_df['p_value_vs_random_H0'] < alpha_corrected) & (summary_df['improvement_pct'] > 0)]
-    if len(winners) == 0:
-        print("Aucun modèle candidat ne bat significativement le hasard après correction multi-tests.")
-        best_row = summary_df[summary_df['model'] != 'random_control'].sort_values('mean_correct', ascending=False).iloc[0]
-        print(f"Meilleur candidat en pratique (non significatif) : {best_row['model']} "
-              f"(moyenne {best_row['mean_correct']:.4f} vs {theoretical:.4f} théorique, p={best_row['p_value_vs_random_H0']:.4f}).")
-    else:
-        print("Modèle(s) qui battent significativement le hasard après correction :")
-        print(winners.to_string(index=False))
+    for group_name, sdf in [('digital', summary_digital), ('control', summary_control)]:
+        sdf = sdf.copy()
+        sdf['sig_moyenne'] = sdf['p_value_vs_random_H0'] < alpha_corrected
+        sdf['sig_k_ge_2'] = sdf['p_value_k_ge_2'] < alpha_corrected
+        winners_mean = sdf[(sdf['model'] != 'random_control') & sdf['sig_moyenne'] & (sdf['improvement_pct'] > 0)]
+        winners_k2 = sdf[(sdf['model'] != 'random_control') & sdf['sig_k_ge_2']]
+        print(f"\n[{group_name}] Significatif sur la MOYENNE : "
+              f"{', '.join(winners_mean['model']) if len(winners_mean) else 'aucun'}")
+        print(f"[{group_name}] Significatif au seuil de gain réel (k>=2) : "
+              f"{', '.join(winners_k2['model']) if len(winners_k2) else 'aucun'}")
+        if group_name == 'control' and len(winners_mean) > 0:
+            print("  -> ALERTE : un modèle bat le hasard sur le groupe TÉMOIN (censé rester plat). "
+                  "Si ça se reproduit, le signal Digital est suspect (biais partagé, pas spécifique au Digital).")
 
 
 if __name__ == '__main__':
