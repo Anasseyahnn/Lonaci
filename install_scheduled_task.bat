@@ -24,6 +24,15 @@ if %ERRORLEVEL% EQU 0 (
     echo.
     echo [OK] Tache "%TASK_NAME%" installee avec succes.
     echo Elle se declenchera tous les jours a 23:45.
+    echo.
+    echo Application des reglages de resilience ^(runs manques rattrapes, batterie autorisee^)...
+    powershell -NoProfile -Command "$s = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew; Set-ScheduledTask -TaskName '%TASK_NAME%' -Settings $s | Out-Null"
+    if !ERRORLEVEL! EQU 0 (
+        echo [OK] Reglages de resilience appliques.
+    ) else (
+        echo [AVERTISSEMENT] Impossible d'appliquer les reglages de resilience ^(code !ERRORLEVEL!^).
+        echo La tache reste fonctionnelle avec les reglages par defaut.
+    )
 ) else (
     echo.
     echo [ERREUR] La creation de la tache a echoue (code %ERRORLEVEL%^).
